@@ -1,0 +1,16 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch app.js",
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.8",
+    "dotenv": "^17.0.0",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.0",
+    "nodemailer": "^7.0.5"
+  }
+}

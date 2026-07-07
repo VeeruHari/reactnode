@@ -1,0 +1,42 @@
+[
+  {
+    "title": "Introduction to React",
+    "description": "Learn the fundamentals of React, including components, JSX, props, and state."
+  },
+  {
+    "title": "Getting Started with TypeScript",
+    "description": "Understand TypeScript basics, static typing, interfaces, and type aliases."
+  },
+  {
+    "title": "Node.js Essentials",
+    "description": "Explore how Node.js works, its event-driven architecture, and asynchronous programming."
+  },
+  {
+    "title": "Express.js REST API",
+    "description": "Build RESTful APIs using Express.js with routing, middleware, and controllers."
+  },
+  {
+    "title": "Working with MongoDB",
+    "description": "Learn how to store, retrieve, update, and delete data using MongoDB and Mongoose."
+  },
+  {
+    "title": "Docker Fundamentals",
+    "description": "Understand Docker images, containers, volumes, networks, and Docker Compose."
+  },
+  {
+    "title": "Authentication with JWT",
+    "description": "Implement secure user authentication using JSON Web Tokens and protected routes."
+  },
+  {
+    "title": "Building a Full-Stack Application",
+    "description": "Connect a React frontend with a Node.js backend and integrate a database."
+  },
+  {
+    "title": "Introduction to AI and RAG",
+    "description": "Learn how Retrieval-Augmented Generation works using embeddings, vector databases, and LLMs."
+  },
+  {
+    "title": "Deploying Applications",
+    "description": "Deploy containerized applications to cloud platforms using Docker and CI/CD pipelines."
+  }
+]
