@@ -12,11 +12,12 @@ const transporter = nodemailer.createTransport({
         : undefined
 });
 
-export async function sendWelcomeEmail(user) {
+export async function sendEmail(user) {
     await transporter.sendMail({
-        from: process.env.SMTP_FROM || "no-reply@reflex.com",
+        from: process.env.SMTP_FROM,
         to: user.email,
-        subject: "Welcome!",
-        text: `Hi ${user.name}, welcome to our application.`
+        subject: user.subject,
+        text: user.text || '',
+        html: user.html || ``
     });
 }

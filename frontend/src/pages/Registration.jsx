@@ -64,7 +64,7 @@ const Registration = () => {
     };
 
     return (
-        <section className="card">
+        <section className="card" style={{ width: '80%', maxWidth: '80%', margin: '0 auto' }}>
             <h2>Registration</h2>
 
             <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '12px', marginTop: '16px' }}>

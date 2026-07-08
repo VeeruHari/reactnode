@@ -26,6 +26,7 @@ services:
       RABBITMQ_URL: ${RABBITMQ_URL}
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY}
       TURNSTILE_SECRET_KEY_REG: ${TURNSTILE_SECRET_KEY_REG}
+      SITE_URL: ${SITE_URL}
     depends_on:
       - mysql
       - rabbitmq
@@ -40,6 +41,7 @@ services:
       SMTP_FROM: ${SMTP_FROM}
       SMTP_USER: ${SMTP_USER}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SITE_URL: ${SITE_URL}
     depends_on:
       - rabbitmq
       - mailpit

@@ -10,7 +10,7 @@ const TopLinks = () => {
             <NavLink className={getLinkClassName} to="/">Home</NavLink>
             <NavLink className={getLinkClassName} to="/about">About</NavLink>
             <NavLink className={getLinkClassName} to="/contact">Contact Us</NavLink>
-            <NavLink className={getLinkClassName} to="/registration">Register</NavLink>
+            <NavLink className={getLinkClassName} to="/login">Login</NavLink>
         </nav>
     );
 };

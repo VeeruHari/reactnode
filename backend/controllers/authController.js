@@ -68,7 +68,8 @@ export async function register(req, res) {
     await publishToQueue("registration-email", {
         userId: result.insertId,
         name,
-        email
+        email,
+        token
     });
 
     res.status(201).json({

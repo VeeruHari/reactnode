@@ -1,5 +1,6 @@
 import amqp from "amqplib";
-import { sendWelcomeEmail } from "../services/emailService.js";
+import { sendEmail } from "../services/emailService.js";
+import { renderTemplate } from "../services/templateRenderer.js";
 
 async function startWorker() {
     while (true) {
@@ -23,9 +24,15 @@ async function startWorker() {
                 }
 
                 const user = JSON.parse(msg.content.toString());
+                const siteUrl = process.env.SITE_URL;
+
+                user.html = await renderTemplate("templates/emails/welcomeEmail.html", {
+                    name: user.name,
+                    verification_link: `${siteUrl}/verify-email?token=${user.token}`
+                });
 
                 try {
-                    await sendWelcomeEmail(user);
+                    await sendEmail(user);
 
                     channel.ack(msg);
 
