@@ -5,10 +5,8 @@ export async function up(connection) {
           first_name VARCHAR(100) NOT NULL,
           last_name VARCHAR(100) NOT NULL,
           email VARCHAR(255) NOT NULL,
-          phone_number VARCHAR(30),
+          phone_number VARCHAR(20),
           comments TEXT,
-          attachment VARCHAR(255),
-          recaptcha BOOLEAN NOT NULL DEFAULT FALSE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);

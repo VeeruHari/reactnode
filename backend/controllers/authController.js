@@ -5,7 +5,9 @@ import { publishToQueue } from "../services/rabbitmqService.js";
 
 const scryptAsync = promisify(crypto.scrypt);
 
-const token = crypto.randomBytes(32).toString("hex");
+function generateVerificationToken() {
+  return crypto.randomBytes(32).toString("hex");
+}
 
 async function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -46,10 +48,11 @@ export async function register(req, res) {
 
     const connection = await getPool();
     const passwordHash = await hashPassword(password);
+    const verificationToken = generateVerificationToken();
     const [result] = await connection.execute(
       `
-        INSERT INTO users (first_name, last_name, email, phone_number, password_hash, recaptcha, is_active, verification_token, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        INSERT INTO users (first_name, last_name, email, phone_number, password_hash, verification_token)
+        VALUES (?, ?, ?, ?, ?, ?)
       `,
       [
         firstName.trim(),
@@ -57,19 +60,16 @@ export async function register(req, res) {
         email.trim().toLowerCase(),
         phone?.trim() || null,
         passwordHash,
-        true,
-        false,
-        token
+        verificationToken
       ]
     );
 
-    // Publish a job to the RabbitMQ queue for sending a registration email
     const name = `${firstName.trim()} ${lastName.trim()}`;
     await publishToQueue("registration-email", {
         userId: result.insertId,
         name,
         email,
-        token
+        token: verificationToken
     });
 
     res.status(201).json({
@@ -89,6 +89,59 @@ export async function register(req, res) {
     res.status(500).json({
       success: false,
       message: "Unable to complete registration right now. Please try again later."
+    });
+  }
+}
+
+export async function verifyEmail(req, res) {
+  try {
+    const token = req.query?.token || req.body?.token;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "A verification token is required."
+      });
+    }
+
+    const connection = await getPool();
+    const [rows] = await connection.execute(
+      "SELECT id, is_active FROM users WHERE verification_token = ? LIMIT 1",
+      [token]
+    );
+
+    console.log("Verification token query result:", rows);
+
+    if (!rows.length) {
+      return res.status(404).json({
+        success: false,
+        message: "This verification link is invalid or has expired."
+      });
+    }
+
+    const user = rows[0];
+
+    if (user.is_active) {
+      return res.status(200).json({
+        success: true,
+        message: "This email address is already verified."
+      });
+    }
+
+    await connection.execute(
+      "UPDATE users SET is_active = TRUE, verification_token = NULL, updated_at = NOW() WHERE id = ?",
+      [user.id]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Email verified successfully. You can now login to your account."
+    });
+  } catch (error) {
+    console.error("Error verifying email:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to verify your email at this time."
     });
   }
 }

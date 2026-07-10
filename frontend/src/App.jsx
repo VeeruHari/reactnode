@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Registration from "./pages/Registration";
+import VerifyEmail from "./pages/VerifyEmail";
 import Login from "./pages/Login";
 
 import './App.css'
@@ -26,8 +27,10 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
+
             <Route path="/registration" element={<Registration />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </main>
       </div>

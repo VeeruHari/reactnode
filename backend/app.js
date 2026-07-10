@@ -27,7 +27,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/register", authRoutes);
+
+app.use("/api/auth", authRoutes);
 app.use("/api/contact", contactRoutes);
 
 app.get("/", (req, res) => {

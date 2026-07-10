@@ -26,17 +26,15 @@ export async function contactUs(req, res) {
     const connection = await getPool();
     const [result] = await connection.execute(
       `
-        INSERT INTO contact_messages (first_name, last_name, email, phone_number, comments, attachment, recaptcha)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO contact_messages (first_name, last_name, email, phone_number, comments)
+        VALUES (?, ?, ?, ?, ?)
       `,
       [
         firstName.trim(),
         lastName.trim(),
         email.trim(),
         phone?.trim() || null,
-        comments?.trim() || null,
-        file?.trim() || null,
-        true
+        comments?.trim() || null
       ]
     );
 

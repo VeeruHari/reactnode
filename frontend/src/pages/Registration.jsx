@@ -32,7 +32,7 @@ const Registration = () => {
         setIsSubmitting(true);
         setStatusMessage('');
 
-        if (!formData.turnstileToken) {
+        if (import.meta.env.PROD && !formData.turnstileToken) {
             setTurnstileError('Please complete the Turnstile challenge.');
             setIsSubmitting(false);
             return;
@@ -40,7 +40,7 @@ const Registration = () => {
 
         try {
             const response = await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/register`,
+                `${import.meta.env.VITE_API_URL}/api/auth/register`,
                 formData,
                 {
                     headers: {
