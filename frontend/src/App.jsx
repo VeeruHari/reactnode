@@ -1,5 +1,6 @@
-import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
+
+import { useAuth } from "./context/AuthContext";
 
 import Header from './components/Header/Header';
 import Sidebar from './components/Sidebar/Sidebar';
@@ -15,7 +16,11 @@ import Login from "./pages/Login";
 import './App.css'
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <div>Please wait...</div>;
+  }
 
   return (
     <div className="app-shell">
@@ -24,7 +29,7 @@ function App() {
         {isAuthenticated && <Sidebar />}
         <main className="content">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Home key="home" />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
 

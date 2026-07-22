@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from "../context/AuthContext";
 import axios from 'axios';
 
 const initialFormData = {
@@ -8,6 +9,8 @@ const initialFormData = {
 };
 
 const Login = () => {
+    const { setIsAuthenticated, login } = useAuth();
+
     const [formData, setFormData] = useState(initialFormData);
     const [statusMessage, setStatusMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,31 +26,19 @@ const Login = () => {
     };
 
     const handleSubmit = async (event) => {
+        
         event.preventDefault();
         setIsSubmitting(true);
         setStatusMessage('');
 
         try {
-            const response = await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/login`,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                }
-            );
+            const result = await login(formData.email, formData.password);
 
-            setStatusMessage(response.data.message || 'Login successful.');
-            setFormData(initialFormData);
-            
-            // Store the token or session info if provided
-            if (response.data.token) {
-                localStorage.setItem('authToken', response.data.token);
+            if (result.success) {
+                navigate("/");
+            } else {
+                setStatusMessage(result.message);
             }
-
-            // Redirect to home or dashboard
-            navigate('/');
         } catch (error) {
             console.error('Login failed:', error);
             setStatusMessage(error.response?.data?.message || 'Unable to login right now.');

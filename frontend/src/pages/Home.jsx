@@ -5,7 +5,7 @@ const Content = (props) => {
     return (
         <>
             {contents.map((content, index) => (
-                <HomeSection content={content} index={index} />
+                <HomeSection key={index} content={content} />
             ))}
         </>
     );
