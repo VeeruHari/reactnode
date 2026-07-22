@@ -1,4 +1,5 @@
 import { getPool } from "../db.js";
+import { publishToQueue } from "../services/rabbitmqService.js";
 
 export async function contactUs(req, res) {
   try {
@@ -37,6 +38,17 @@ export async function contactUs(req, res) {
         comments?.trim() || null
       ]
     );
+
+    await publishToQueue("emotion-analysis", {
+        messageId: result.insertId,
+        emailContent: comments.trim(),
+        businessName: "Pixel Gallery",
+        businessDescription: `
+          Pixel Gallery is an online marketplace for digital images.
+          Customers can browse, purchase, download, and manage royalty-free images.
+          We provide support for image downloads, licensing, payments, user accounts,
+          and upload issues.`
+    });
 
     res.status(201).json({
       success: true,

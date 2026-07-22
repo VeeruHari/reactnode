@@ -11,6 +11,9 @@ dist-ssr
 .env.*
 !.env.example
 
+# Python virtual environment
+.venv/
+
 # Build output
 frontend/dist/
 frontend/dist-ssr/
@@ -40,3 +43,10 @@ lerna-debug.log*
 # AI tooling
 .codex/
 .agents/
+
+# Python files
+__pycache__/
+*.py[cod]
+
+backend/workers/python_workers/models/
+backend/workers/python_workers/results/
