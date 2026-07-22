@@ -23,6 +23,23 @@ async function hashPassword(password) {
   return `${salt}:${derivedKey.toString("hex")}`;
 }
 
+async function verifyPassword(password, storedHash) {
+    const [salt, hash] = storedHash.split(":");
+
+    const config = {
+        cost: 16384,
+        blockSize: 8,
+        parallelization: 1
+    };
+
+    const derivedKey = await scryptAsync(password, salt, 64, config);
+
+    return crypto.timingSafeEqual(
+        Buffer.from(hash, "hex"),
+        derivedKey
+    );
+}
+
 export async function register(req, res) {
   try {
     const { firstName, lastName, email, phone, password, turnstileToken } = req.body;
@@ -144,4 +161,97 @@ export async function verifyEmail(req, res) {
       message: "Unable to verify your email at this time."
     });
   }
+}
+
+export async function login(req, res) {
+  try {
+    const { email, password} = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please fill in the required fields."
+      });
+    }
+
+    const connection = await getPool();
+
+    const [users] = await connection.execute(
+        "SELECT * FROM users WHERE email = ? AND is_active = TRUE LIMIT 1",
+        [email.toLowerCase()]
+    );
+
+    if (users.length === 0) {
+        return res.status(401).json({
+            message: "Invalid email address."
+        });
+    }
+
+    const isPasswordValid = await verifyPassword(
+        password,
+        users[0].password_hash
+    );
+
+    if (!isPasswordValid) {
+        return res.status(401).json({
+            message: "Invalid password."
+        });
+    }
+
+    if (!req.session) {
+      req.session = {};
+    }
+
+    req.session.userId = users[0].id;
+    req.session.role = users[0].role;
+    
+    res.status(201).json({
+      success: true,
+      message: "Login successful.",
+      user: {
+        userId: users[0].id,
+        role: users[0].role
+      }
+    });
+  } catch (error) {
+    console.error("Error login:", error);
+    res.status(500).json({
+      success: false,
+      message: "Unable to login now. Please try again later."
+    });
+  }
+}
+
+export function logout(req, res) {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({
+                success: false,
+                message: "Logout failed."
+            });
+        }
+
+        res.clearCookie("connect.sid");
+
+        return res.json({
+            success: true,
+            message: "Logged out successfully."
+        });
+    });
+}
+
+export function checkSession(req, res) {
+  if (!req.session.userId) {
+      return res.status(401).json({
+          authenticated: false
+      });
+  }
+
+  res.json({
+      authenticated: true,
+      user: {
+          id: req.session.userId,
+          role: req.session.role
+      }
+  });
 }

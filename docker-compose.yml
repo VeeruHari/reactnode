@@ -12,6 +12,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: node-api
+    command: npm run dev
     ports:
       - "${BACKEND_PORT}:5000"
     volumes:
@@ -27,11 +28,12 @@ services:
       TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY}
       TURNSTILE_SECRET_KEY_REG: ${TURNSTILE_SECRET_KEY_REG}
       SITE_URL: ${SITE_URL}
+      SESSION_SECRET: ${SESSION_SECRET}
     depends_on:
       - mysql
       - rabbitmq
 
-  worker:
+  email-worker:
     build: ./backend
     command: node workers/emailWorker.js
     environment:
@@ -45,6 +47,42 @@ services:
     depends_on:
       - rabbitmq
       - mailpit
+
+  python-email-emotion-worker:
+    build:
+      context: ./backend/workers/python_workers
+      dockerfile: email_emotion_worker/Dockerfile
+    container_name: python-email-emotion-worker
+    command: python -m email_emotion_worker.worker
+    env_file:
+      - .env
+    volumes:
+      - ./backend/workers/python_workers:/app
+    depends_on:
+      - rabbitmq
+      - mysql
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+      BACKEND_DB_HOST: ${BACKEND_DB_HOST}
+      BACKEND_DB_PORT: ${BACKEND_DB_PORT}
+      BACKEND_DB_NAME: ${BACKEND_DB_NAME}
+      BACKEND_DB_USER: ${BACKEND_DB_USER}
+      BACKEND_DB_PASSWORD: ${BACKEND_DB_PASS}
+      PYTHONUNBUFFERED: "1"
+    restart: unless-stopped
+
+  python-trainer:
+    build:
+      context: ./backend/workers/python_workers
+      dockerfile: email_emotion_worker/Dockerfile
+    command: python /app/training/train.py
+    env_file:
+      - .env
+    volumes:
+      - ./backend/workers/python_workers:/app
 
   rabbitmq:
     image: rabbitmq:3-management
