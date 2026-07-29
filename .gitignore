@@ -50,3 +50,4 @@ __pycache__/
 
 backend/workers/python_workers/models/
 backend/workers/python_workers/results/
+backend/uploads/

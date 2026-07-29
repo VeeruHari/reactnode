@@ -4,6 +4,7 @@ import cors from "cors";
 import { getPool } from "./db.js";
 import authRoutes from "./routes/authRoutes.js";
 import contactRoutes from "./routes/contactUsRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import { runMigrations } from "./migrations/migrationRunner.js";
 import { createSessionMiddleware } from "./middleware/sessionMiddleware.js";
 
@@ -16,6 +17,7 @@ global.appName = "Reflex";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static("uploads"));
 
 app.use(cors({
   origin: process.env.SITE_URL,
@@ -27,6 +29,8 @@ app.use(createSessionMiddleware());
 app.use("/api/auth", authRoutes);
 app.use("/api/contact", contactRoutes);
 
+app.use("/api/admin", adminRoutes);
+
 app.get("/", (req, res) => {
   res.json({
     message: "Backend is running!"
@@ -34,7 +38,8 @@ app.get("/", (req, res) => {
 });
 
 async function initializeDatabase() {
-  const connection = await getPool();
+  const pool = await getPool();
+  const connection = await pool.getConnection();
 
   for (let attempt = 1; attempt <= 10; attempt += 1) {
     try {

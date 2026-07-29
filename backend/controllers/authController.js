@@ -64,6 +64,7 @@ export async function register(req, res) {
     }
 
     const connection = await getPool();
+
     const passwordHash = await hashPassword(password);
     const verificationToken = generateVerificationToken();
     const [result] = await connection.execute(
@@ -122,6 +123,7 @@ export async function verifyEmail(req, res) {
     }
 
     const connection = await getPool();
+
     const [rows] = await connection.execute(
       "SELECT id, is_active FROM users WHERE verification_token = ? LIMIT 1",
       [token]
@@ -241,17 +243,18 @@ export function logout(req, res) {
 }
 
 export function checkSession(req, res) {
-  if (!req.session.userId) {
-      return res.status(401).json({
-          authenticated: false
+  if (req.session.userId) {
+      return res.json({
+          authenticated: true,
+          user: {
+              id: req.session.userId,
+              role: req.session.role
+          }
       });
   }
 
-  res.json({
-      authenticated: true,
-      user: {
-          id: req.session.userId,
-          role: req.session.role
-      }
+  return res.json({
+      authenticated: false,
+      user: null
   });
 }

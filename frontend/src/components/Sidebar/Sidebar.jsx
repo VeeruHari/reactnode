@@ -1,28 +1,24 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import AdminLinks from "./AdminLinks/AdminLinks";
 
-const Sidebar = () => {
-  const { isAuthenticated, logout, user } = useAuth();
-  const navigate = useNavigate();
+const Sidebar = ({ onMenuClick }) => {
+  const { logout, user } = useAuth();
 
   async function handleLogout(event) {
     event.preventDefault();
+    await logout();
+  }
 
-    const result = await logout();
-
-    if (result.success) {
-        navigate("/login", { replace: true });
-    } else {
-        console.error(result.message);
-    }
+  const clickHandler = (menu) => {
+      //console.log(menu);
+      onMenuClick?.(menu);
   }
 
   return (
     <aside className="sidebar">
       <ul>
-        {user.role === 0 && (
-          <AdminLinks />
+        {user?.role === 0 && (
+          <AdminLinks clickHandler={clickHandler} />
         )}
         <li><a style={{ cursor: "pointer" }} onClick={handleLogout}>Logout</a></li>
       </ul>

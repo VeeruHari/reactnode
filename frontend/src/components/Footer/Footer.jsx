@@ -1,6 +1,6 @@
 const Footer = () => (
   <footer className="app-footer">
-    <p>© 2026 Reflex</p>
+    <p>© 2026 REFLEX</p>
   </footer>
 );
 

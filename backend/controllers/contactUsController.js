@@ -25,6 +25,7 @@ export async function contactUs(req, res) {
     }
 
     const connection = await getPool();
+
     const [result] = await connection.execute(
       `
         INSERT INTO contact_messages (first_name, last_name, email, phone_number, comments)

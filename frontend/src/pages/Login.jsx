@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from "../context/AuthContext";
-import axios from 'axios';
+import { useAuth } from "../context/useAuth";
 
 const initialFormData = {
     email: '',
@@ -9,7 +8,7 @@ const initialFormData = {
 };
 
 const Login = () => {
-    const { setIsAuthenticated, login } = useAuth();
+    const { login } = useAuth();
 
     const [formData, setFormData] = useState(initialFormData);
     const [statusMessage, setStatusMessage] = useState('');
@@ -35,7 +34,12 @@ const Login = () => {
             const result = await login(formData.email, formData.password);
 
             if (result.success) {
-                navigate("/");
+                if (result.user.role === 0) {
+                    navigate("/admin/gallery");
+                }
+                if (result.user.role === 1) {
+                    //navigate("/gallery");
+                }
             } else {
                 setStatusMessage(result.message);
             }
@@ -59,6 +63,7 @@ const Login = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
+                        autoComplete="username"
                         placeholder="you@example.com"
                         required
                     />
@@ -71,6 +76,7 @@ const Login = () => {
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
+                        autoComplete="current-password"
                         placeholder="Enter your password"
                         required
                     />

@@ -1,8 +1,8 @@
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 
 const TopLinks = () => {
-    const { isAuthenticated } = useAuth();
+    const { user } = useAuth();
 
     const getLinkClassName = ({ isActive }) => (
         isActive ? "top-link selected" : "top-link"
@@ -10,7 +10,7 @@ const TopLinks = () => {
 
     return (
         <nav className="top-nav">
-            {!isAuthenticated && (
+            {!user && (
                 <>
                     <NavLink className={getLinkClassName} to="/">Home</NavLink>
                     <NavLink className={getLinkClassName} to="/about">About</NavLink>
