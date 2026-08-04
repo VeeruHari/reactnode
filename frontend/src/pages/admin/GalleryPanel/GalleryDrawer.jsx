@@ -103,10 +103,10 @@ const GalleryDrawer = ({ open, gallery, onClose, gallerySaved }) => {
     } catch (error) {
       toast.error('Failed to create/update gallery.' + error, {position: "top-center"});
     } finally {
-      //
+      setForm(initialForm);
+      setPreview(null);
     }
 
-    setForm(initialForm);
     onClose();
   };
 

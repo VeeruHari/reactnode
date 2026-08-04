@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { getPool } from "./db.js";
 import authRoutes from "./routes/authRoutes.js";
-import contactRoutes from "./routes/contactUsRoutes.js";
+import PublicRoutes from "./routes/publicRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import { runMigrations } from "./migrations/migrationRunner.js";
 import { createSessionMiddleware } from "./middleware/sessionMiddleware.js";
@@ -26,9 +26,8 @@ app.use(cors({
 
 app.use(createSessionMiddleware());
 
+app.use("/api", PublicRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/contact", contactRoutes);
-
 app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
@@ -38,8 +37,7 @@ app.get("/", (req, res) => {
 });
 
 async function initializeDatabase() {
-  const pool = await getPool();
-  const connection = await pool.getConnection();
+  const connection = await getPool();
 
   for (let attempt = 1; attempt <= 10; attempt += 1) {
     try {

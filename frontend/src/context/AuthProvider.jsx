@@ -5,6 +5,7 @@ import {
     useMemo,
 } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 import AuthContext from "./AuthContext";
 
 export function AuthProvider({ children }) {
@@ -26,8 +27,8 @@ export function AuthProvider({ children }) {
                 setUser(null);
             }
         } catch (error) {
-            console.log(error);
             setUser(null);
+            toast.error(error.response?.data?.message || error.message);
         } finally {
             setLoading(false);
         }

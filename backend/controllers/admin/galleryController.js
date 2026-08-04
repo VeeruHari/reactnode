@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { getPool } from "../../db.js";
+import { publishToQueue } from "../../services/rabbitmqService.js";
 
 export const saveGallery = async (req, res) => {
 
@@ -24,13 +25,29 @@ export const saveGallery = async (req, res) => {
             ]
         );
 
-        const gallery = await getSingleGallery(result.insertId);
+        if (result.insertId) {
+            await publishToQueue(
+                "gallery_embedding",
+                {
+                    gallery_id: result.insertId,
+                    title: req.body.title,
+                    description: req.body.description,
+                    image
+                }
+            );
 
-        res.status(201).json({
-            success: true,
-            gallery: gallery,
-            message: "Image uploaded successfully"
-        });
+            const gallery = await getSingleGallery(result.insertId);
+
+            res.status(201).json({
+                success: true,
+                gallery: gallery,
+                message: "Image uploaded successfully"
+            });
+        } else {
+            res.status(500).json({
+                message: "Upload failed"
+            });
+        }
     } catch (error) {
         res.status(500).json({
             message: "Upload failed"
@@ -44,7 +61,7 @@ export const getGallery = async (req, res) => {
 
     try {
         const [galleryList] = await connection.execute(
-            "SELECT id, title, description, image, price, stock FROM gallery WHERE is_active = TRUE AND stock > 0 ORDER BY id DESC"
+            "SELECT id, title, description, image, price, stock FROM gallery WHERE is_active = TRUE AND stock > 0 ORDER BY updated_at DESC"
         );
 
         res.json({
@@ -140,37 +157,74 @@ export const deleteGallery = async (req, res) => {
 
 export const updateGallery = async (req, res) => {
 
-    const connection = await getPool();
+    const pool = await getPool();
+    const connection = await pool.getConnection();
 
     try {
         const { id } = req.params;
         const { title, description, price, stock } = req.body;
 
+        await connection.beginTransaction();
+
+        // Get existing gallery
+        const gallery = await getSingleGallery(id);
+
+        if (!gallery) {
+            throw new Error("Gallery not found");
+        }
+
+        let image = gallery.image;
+
         if (req.file) {
-            await connection.execute(
-                `UPDATE gallery SET title = ?, description = ?, price = ?, stock = ?, image = ? WHERE id = ?`,
-                [title, description, price, stock, req.file.filename, id]
-            );
-        } else {
-            await connection.execute(
-                `UPDATE gallery SET title = ?, description = ?, price = ?, stock = ? WHERE id = ?`,
-                [title, description, price, stock, id]
+            // Delete old image
+            if (gallery.image) {
+                const imagePath = path.join(
+                    process.cwd(),
+                    "uploads",
+                    "gallery",
+                    gallery.image
+                );
+
+                try {
+                    await fs.unlink(imagePath);
+                } catch (err) {
+                    if (err.code !== "ENOENT") {
+                        throw err;
+                    }
+                }
+            }
+
+            image = req.file.filename;
+
+            await publishToQueue(
+                "gallery_embedding",
+                {
+                    gallery_id: id,
+                    title: title,
+                    description: description,
+                    image
+                }
             );
         }
 
-        const gallery = await getSingleGallery(id);
+        await connection.execute(
+            `UPDATE gallery SET title = ?, description = ?, price = ?, stock = ?, image = ? WHERE id = ?`,
+            [title, description, price, stock, image, id]
+        );
+
+        await connection.commit();
+
+        const updatedGallery = await getSingleGallery(id);
 
         res.json({
-        success: true,
-        gallery: gallery,
-        message: "Gallery updated successfully.",
+            success: true,
+            gallery: updatedGallery,
+            message: "Gallery updated successfully.",
         });
-    } catch (error) {
-        console.error(error);
-
-        res.status(500).json({
-        success: false,
-        message: "Failed to update gallery.",
-        });
+    } catch (err) {
+        await connection.rollback();
+        throw err;
+    } finally {
+        connection.release();
     }
 }

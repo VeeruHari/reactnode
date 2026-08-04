@@ -40,7 +40,8 @@ export async function contactUs(req, res) {
       ]
     );
 
-    await publishToQueue("emotion-analysis", {
+    await publishToQueue(
+      "emotion-analysis", {
         messageId: result.insertId,
         emailContent: comments.trim(),
         businessName: "Pixel Gallery",
@@ -49,7 +50,8 @@ export async function contactUs(req, res) {
           Customers can browse, purchase, download, and manage royalty-free images.
           We provide support for image downloads, licensing, payments, user accounts,
           and upload issues.`
-    });
+      }
+    );
 
     res.status(201).json({
       success: true,

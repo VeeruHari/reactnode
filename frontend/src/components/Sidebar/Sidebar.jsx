@@ -1,7 +1,8 @@
 import { useAuth } from "../../context/useAuth";
 import AdminLinks from "./AdminLinks/AdminLinks";
+import UserLinks from "./UserLinks/UserLinks";
 
-const Sidebar = ({ onMenuClick }) => {
+const Sidebar = () => {
   const { logout, user } = useAuth();
 
   async function handleLogout(event) {
@@ -9,18 +10,11 @@ const Sidebar = ({ onMenuClick }) => {
     await logout();
   }
 
-  const clickHandler = (menu) => {
-      //console.log(menu);
-      onMenuClick?.(menu);
-  }
-
   return (
     <aside className="sidebar">
       <ul>
-        {user?.role === 0 && (
-          <AdminLinks clickHandler={clickHandler} />
-        )}
-        <li><a style={{ cursor: "pointer" }} onClick={handleLogout}>Logout</a></li>
+        {(!user || user?.role !== 0) ? <UserLinks /> : <AdminLinks />}
+        {user && <li><a style={{ cursor: "pointer" }} onClick={handleLogout}>Logout</a></li>}
       </ul>
     </aside>
   );

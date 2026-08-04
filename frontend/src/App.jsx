@@ -21,7 +21,7 @@ import "./App.css";
 import "react-toastify/dist/ReactToastify.css";
 
 function App() {
-    const { loading, user } = useAuth();
+    const { loading } = useAuth();
 
     if (loading) {
         return <div>Please wait...</div>;
@@ -35,10 +35,8 @@ function App() {
                 <Header />
 
                 <div className="app-body">
-                    {/* Show sidebar only for logged-in users */}
-                    {user && (
-                        <Sidebar />
-                    )}
+
+                    <Sidebar />
 
                     <main className="content">
                         <Routes>
