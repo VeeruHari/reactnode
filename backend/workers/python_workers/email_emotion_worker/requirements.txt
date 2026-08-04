@@ -1,7 +1,0 @@
-pika
-transformers
-datasets
-pandas
-scikit-learn
-mysql-connector-python
-accelerate
