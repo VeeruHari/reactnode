@@ -1,0 +1,11 @@
+pika
+transformers
+datasets
+pandas
+scikit-learn
+mysql-connector-python
+accelerate
+open_clip_torch
+qdrant-client
+Pillow
+flask
