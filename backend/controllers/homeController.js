@@ -2,16 +2,36 @@ import { getPool } from "../db.js";
 
 export const listGallery = async (req, res) => {
 
-    const connection = await getPool();
+    const limit = parseInt(req.query.limit) || 10;
+    const cursor = req.query.cursor ? parseInt(req.query.cursor) : null;
 
     try {
-        const [galleryList] = await connection.execute(
-            "SELECT id, title, description, image, price, stock FROM gallery WHERE is_active = TRUE AND stock > 0 ORDER BY updated_at DESC"
-        );
+        const connection = await getPool();
+
+        let sql = `SELECT id, title, description, image, price, stock FROM gallery WHERE is_active = TRUE AND stock > 0`;
+
+        const params = [];
+        if (cursor) {
+            sql += " AND id < ?";
+            params.push(cursor);
+        }
+        sql += ` ORDER BY id DESC LIMIT ?`;
+        params.push(limit + 1); // Fetch one extra record to check if there's more
+
+        const [galleryList] = await connection.query(sql, params);
+
+        const hasMore = galleryList.length > limit;
+        if (hasMore) {
+            galleryList.pop(); // Remove the extra record
+        }
+
+        const nextCursor = galleryList.length ? galleryList[galleryList.length - 1].id : null;
 
         res.json({
             success: true,
             galleries: galleryList,
+            nextCursor,
+            hasMore
         });
     } catch (err) {
         console.error(err);
@@ -66,21 +86,7 @@ export const searchGallery = async (req, res) => {
         // Step 3: Fetch gallery details from MySQL
         const placeholders = ids.map(() => "?").join(",");
 
-        const [galleryList] = await connection.execute(
-            `
-            SELECT
-                id,
-                title,
-                description,
-                image,
-                price,
-                stock
-            FROM gallery
-            WHERE
-                is_active = TRUE
-                AND stock > 0
-                AND id IN (${placeholders})
-            `,
+        const [galleryList] = await connection.execute(`SELECT id, title, description, image, price, stock FROM gallery WHERE is_active = TRUE AND stock > 0 AND id IN (${placeholders})`,
             ids
         );
 
